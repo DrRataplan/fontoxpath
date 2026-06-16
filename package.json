@@ -3,7 +3,15 @@
 	"version": "3.34.0",
 	"description": "A minimalistic XPath 3.1 engine in JavaScript",
 	"main": "dist/fontoxpath.js",
-	"module": "dist/fontoxpath.esm.js",
+	"module": "dist/fontoxpath.esm.mjs",
+	"exports": {
+		".": {
+			"types": "./dist/fontoxpath.d.ts",
+			"import": "./dist/fontoxpath.esm.mjs",
+			"require": "./dist/fontoxpath.js",
+			"default": "./dist/fontoxpath.js"
+		}
+	},
 	"directories": {
 		"test": "test"
 	},
@@ -39,7 +47,7 @@
 	},
 	"files": [
 		"dist/fontoxpath.js",
-		"dist/fontoxpath.esm.js",
+		"dist/fontoxpath.esm.mjs",
 		"dist/fontoxpath.d.ts"
 	],
 	"keywords": [

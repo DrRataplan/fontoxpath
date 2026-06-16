@@ -102,7 +102,7 @@ export default fontoxpath;
 });
 `;
 
-	fs.writeFileSync('./dist/fontoxpath.esm.js', fullModule, 'utf8');
+	fs.writeFileSync('./dist/fontoxpath.esm.mjs', fullModule, 'utf8');
 	fs.writeFileSync('./dist/fontoxpath.js', umdModule, 'utf8');
 }
 
