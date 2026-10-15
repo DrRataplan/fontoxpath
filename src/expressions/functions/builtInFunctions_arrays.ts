@@ -5,6 +5,7 @@ import ISequence from '../dataTypes/ISequence';
 import isSubtypeOf from '../dataTypes/isSubtypeOf';
 import sequenceFactory from '../dataTypes/sequenceFactory';
 import Value, { SequenceMultiplicity, SequenceType, ValueType } from '../dataTypes/Value';
+import { Decimal } from '../dataTypes/valueTypes/Decimal';
 import DynamicContext from '../DynamicContext';
 import ExecutionParameters from '../ExecutionParameters';
 import { BUILT_IN_NAMESPACE_URIS } from '../staticallyKnownNamespaces';
@@ -78,8 +79,9 @@ const arraySubarray: FunctionDefinitionType = (
 	return zipSingleton(
 		[arraySequence, startSequence, lengthSequence],
 		([array, start, length]) => {
-			const startValue = start.value;
-			const lengthValue = length.value;
+			// Make both floats. Infinite precision numbers in arrays are nonsense.
+			const startValue = (start.value as Decimal).toFloat();
+			const lengthValue = (length.value as Decimal).toFloat();
 
 			if (startValue > (array as ArrayValue).members.length || startValue <= 0) {
 				throw new Error('FOAY0001: subarray start out of bounds.');
@@ -119,7 +121,9 @@ const arrayRemove: FunctionDefinitionType = (
 
 			const newMembers = (array as ArrayValue).members.concat();
 			for (let i = 0, l = indicesToRemove.length; i < l; ++i) {
-				const position = indicesToRemove[i];
+				// Make this a float. Infinite precision numbers in arrays are nonsense
+
+				const position = (indicesToRemove[i] as Decimal).toFloat();
 				if (position > (array as ArrayValue).members.length || position <= 0) {
 					throw new Error('FOAY0001: subarray position out of bounds.');
 				}

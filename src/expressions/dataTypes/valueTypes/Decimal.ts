@@ -1,3 +1,4 @@
+import { errFORG0001 } from '../../../expressions/XPathErrors';
 import { ValueType } from '../Value';
 
 const ZERO = BigInt(0);
@@ -20,6 +21,8 @@ function digitCount(value: bigint): number {
 }
 
 export class Decimal {
+	public static ZERO = Decimal.fromBigInt(ZERO);
+
 	/**
 	 * The value of this decimal is `_unscaled * 10^-_scale`. The scale is always
 	 * non-negative and the unscaled value never ends in a zero digit while the scale
@@ -63,8 +66,10 @@ export class Decimal {
 	public static fromString(decimalString: string): Decimal {
 		const match = /^([+-]?)(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/.exec(decimalString.trim());
 		if (!match || (match[2] === '' && !match[3])) {
-			throw new Error(
-				`FORG0001: "${decimalString}" is not a valid lexical representation of xs:decimal`,
+			throw errFORG0001(
+				decimalString,
+				ValueType.XSSTRING,
+				'is not a valid lexical representation of xs:decimal',
 			);
 		}
 		const sign = match[1] === '-' ? -ONE : ONE;
