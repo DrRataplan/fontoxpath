@@ -147,9 +147,67 @@ function createEnvironment(cwd, environmentNode) {
 
 	return {
 		contextNode: fileName ? getFile((cwd ? cwd + '/' : '') + fileName) : null,
+		decimalFormatProlog: createDecimalFormatProlog(environmentNode, namespaces),
 		namespaceResolver: Object.keys(namespaces).length ? (prefix) => namespaces[prefix] : null,
 		variables,
 	};
+}
+
+function escapeForXQueryStringLiteral(value: string): string {
+	return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+/**
+ * The QT3 test catalog lets an <environment> configure a decimal-format (used by fn:format-number
+ * tests) via a <decimal-format> element rather than any host-language mechanism. fontoxpath has no
+ * public API for injecting decimal-formats into plain XPath, so instead this synthesizes the
+ * equivalent XQuery prolog (`declare decimal-format ...;` / `declare default decimal-format ...;`,
+ * plus any namespace declarations a namespaced format name needs) to prepend to the test query.
+ */
+function createDecimalFormatProlog(
+	environmentNode: Node,
+	namespaces: { [prefix: string]: string },
+): string {
+	const decimalFormatNodes = evaluateXPathToNodes('decimal-format', environmentNode);
+	if (!decimalFormatNodes.length) {
+		return '';
+	}
+
+	const namespaceDecls = Object.keys(namespaces)
+		.filter((prefix) => prefix)
+		.map(
+			(prefix) =>
+				`declare namespace ${prefix}="${escapeForXQueryStringLiteral(
+					namespaces[prefix],
+				)}";\n`,
+		)
+		.join('');
+
+	const decimalFormatDecls = decimalFormatNodes
+		.map((decimalFormatNode) => {
+			const name = evaluateXPathToString('@name', decimalFormatNode);
+			const declStart = name
+				? `declare decimal-format ${name}`
+				: 'declare default decimal-format';
+			const properties = evaluateXPathToNodes(
+				"@*[local-name(.) != 'name']",
+				decimalFormatNode,
+			)
+				.map(
+					(attr) =>
+						`${evaluateXPathToString(
+							'local-name(.)',
+							attr,
+						)}="${escapeForXQueryStringLiteral(
+							evaluateXPathToString('string(.)', attr),
+						)}"`,
+				)
+				.join(' ');
+			return `${declStart}${properties ? ' ' + properties : ''};\n`;
+		})
+		.join('');
+
+	return namespaceDecls + decimalFormatDecls;
 }
 
 const environmentsByName = evaluateXPathToNodes('/catalog/environment', catalog).reduce(
@@ -188,7 +246,7 @@ function getArguments(
 } {
 	const baseUrl = testSetFileName.substr(0, testSetFileName.lastIndexOf('/'));
 
-	const testQuery = evaluateXPathToBoolean('./test/@file', testCase)
+	const rawTestQuery = evaluateXPathToBoolean('./test/@file', testCase)
 		? getFile(
 				evaluateXPathToString('$baseUrl || "/" || test/@file', testCase, null, {
 					baseUrl,
@@ -230,6 +288,11 @@ function getArguments(
 					? null
 					: undefined;
 	const variablesInScope = env.variables;
+	const testQuery =
+		typeof rawTestQuery === 'string' &&
+		(env as { decimalFormatProlog?: string }).decimalFormatProlog
+			? (env as { decimalFormatProlog?: string }).decimalFormatProlog + rawTestQuery
+			: rawTestQuery;
 
 	return {
 		baseUrl,

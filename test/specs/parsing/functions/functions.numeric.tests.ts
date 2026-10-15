@@ -6,6 +6,7 @@ import {
 	evaluateXPathToNumber,
 	evaluateXPathToNumbers,
 	evaluateXPathToString,
+	Language,
 } from 'fontoxpath';
 
 let documentNode;
@@ -656,5 +657,260 @@ describe('numeric functions', () => {
 				);
 			});
 		}
+	});
+
+	describe('fn:format-number', () => {
+		function evalXQuery(query: string): string {
+			return evaluateXPathToString(
+				query,
+				documentNode,
+				null,
+				{},
+				{
+					language: Language.XQUERY_3_1_LANGUAGE,
+				},
+			);
+		}
+
+		it('formats with grouping and rounding (numberformat01)', () => {
+			chai.assert.equal(
+				evaluateXPathToString("format-number(2392.14*36.58,'000,000.000000')"),
+				'087,504.481200',
+			);
+		});
+
+		it('formats with # and 0 mixed (numberformat02)', () => {
+			chai.assert.equal(
+				evaluateXPathToString("format-number(12792.14*96.58,'##,###,000.000###')"),
+				'1,235,464.8812',
+			);
+		});
+
+		it('formats negative numbers with a single sub-picture (numberformat03)', () => {
+			chai.assert.equal(
+				evaluateXPathToString("format-number(2792.14*(-36.58),'000,000.000###')"),
+				'-102,136.4812',
+			);
+		});
+
+		it('uses the second sub-picture for negative numbers (numberformat04)', () => {
+			chai.assert.equal(
+				evaluateXPathToString(
+					"format-number(2392.14*(-36.58),'000,000.000###;###,###.000###')",
+				),
+				'87,504.4812',
+			);
+		});
+
+		it('prepends the minus-sign to an explicit negative sub-picture (numberformat28)', () => {
+			chai.assert.equal(
+				evaluateXPathToString(
+					"format-number(2392.14*(-36.58),'000,000.000###;-###,###.000###')",
+				),
+				'-87,504.4812',
+			);
+		});
+
+		it('scales by 100 for percent (numberformat05)', () => {
+			chai.assert.equal(evaluateXPathToString("format-number(0.4857,'###.###%')"), '48.57%');
+		});
+
+		it('scales by 1000 for per-mille (numberformat06)', () => {
+			chai.assert.equal(evaluateXPathToString("format-number(0.4857,'###.###‰')"), '485.7‰');
+		});
+
+		it('keeps a currency-like literal prefix/suffix (numberformat08)', () => {
+			chai.assert.equal(
+				evaluateXPathToString("format-number(2.14*86.58,'PREFIX##00.000###SUFFIX')"),
+				'PREFIX185.2812SUFFIX',
+			);
+		});
+
+		it('renders empty-sequence input as NaN (numberformat61)', () => {
+			chai.assert.equal(evaluateXPathToString("format-number((), '0.00')"), 'NaN');
+		});
+
+		it('renders positive/negative infinity', () => {
+			chai.assert.equal(
+				evaluateXPathToString("format-number(1 div 0e0, '0.00')"),
+				'Infinity',
+			);
+			chai.assert.equal(
+				evaluateXPathToString("format-number(-1 div 0e0, '0.00')"),
+				'-Infinity',
+			);
+		});
+
+		it('strips a trailing decimal separator when there is nothing to show (numberformat65)', () => {
+			chai.assert.equal(evaluateXPathToString("format-number(1234e0, '0000.####')"), '1234');
+		});
+
+		it('supports irregular grouping (numberformat35)', () => {
+			chai.assert.equal(
+				evaluateXPathToString("format-number(987654321,'###,##0,00.00')"),
+				'9876,543,21.00',
+			);
+		});
+
+		it('regular grouping only depends on the innermost separator (numberformat317)', () => {
+			chai.assert.equal(evaluateXPathToString("format-number(642120, '0,00')"), '64,21,20');
+		});
+
+		it('regular grouping requires all explicit widths to match (numberformat318/319)', () => {
+			chai.assert.equal(
+				evaluateXPathToString("format-number(642120, '#,#,#')"),
+				'6,4,2,1,2,0',
+			);
+			chai.assert.equal(evaluateXPathToString("format-number(642120, '##,#,#')"), '6421,2,0');
+		});
+
+		it('allows a leading grouping-separator (numberformat320)', () => {
+			chai.assert.equal(evaluateXPathToString("format-number(2001, ',##0')"), '2,001');
+			chai.assert.equal(evaluateXPathToString("format-number(3000000,',##0')"), '3,000,000');
+		});
+
+		it('rejects a trailing grouping-separator (numberformat152)', () => {
+			chai.assert.throws(
+				() => evaluateXPathToString("format-number(12345.678, '#,')"),
+				/FODF1310/,
+			);
+		});
+
+		it('rejects adjacent grouping-separators (numberformat153)', () => {
+			chai.assert.throws(
+				() => evaluateXPathToString("format-number(12345.678, '#,,###')"),
+				/FODF1310/,
+			);
+		});
+
+		it('rejects a grouping-separator adjacent to the decimal-separator (numberformat150/151)', () => {
+			chai.assert.throws(
+				() => evaluateXPathToString("format-number(12345.678, '#,.##')"),
+				/FODF1310/,
+			);
+			chai.assert.throws(
+				() => evaluateXPathToString("format-number(12345.678, '#.,##')"),
+				/FODF1310/,
+			);
+		});
+
+		it('rejects mandatory digits before optional digits (numberformat)', () => {
+			chai.assert.throws(
+				() => evaluateXPathToString("format-number(931.45, '000.##0')"),
+				/FODF1310/,
+			);
+		});
+
+		it('rejects a picture without any digit sign', () => {
+			chai.assert.throws(
+				() => evaluateXPathToString("format-number(931.45, 'fred.ginger')"),
+				/FODF1310/,
+			);
+		});
+
+		it('renders scientific notation with a fixed mantissa digit count (numberformat101/129/130/131)', () => {
+			chai.assert.equal(evalXQuery("format-number(12345.678, '9.9999e999')"), '1.2346e004');
+			chai.assert.equal(evalXQuery("format-number(12345.678, '999.99e99')"), '123.46e02');
+			chai.assert.equal(evalXQuery("format-number(12345.678, '#99.99e99')"), '12.35e03');
+			chai.assert.equal(evalXQuery("format-number(12345.678, '#.99e99')"), '0.12e05');
+		});
+
+		it('renders a negative exponent with the minus-sign (from spec examples)', () => {
+			chai.assert.equal(evalXQuery("format-number(0.2, '9e9')"), '2e-1');
+		});
+
+		it('treats an inactive exponent-separator as literal text (numberformat113/143/144)', () => {
+			chai.assert.equal(
+				evalXQuery("format-number(12345.678, '9.9999eDog')"),
+				'12345.6780eDog',
+			);
+			chai.assert.equal(
+				evalXQuery("format-number(12345.678, '9.9999e99end')"),
+				'1.2346e04end',
+			);
+			chai.assert.equal(evalXQuery("format-number(12345.678, '9.9999e99e')"), '1.2346e04e');
+		});
+
+		it('rejects a second active exponent-separator (numberformat108)', () => {
+			chai.assert.throws(
+				() => evalXQuery("format-number(12345.678, '9.99e99e99')"),
+				/FODF1310/,
+			);
+		});
+
+		it('rejects an active character right after the exponent digits (numberformat110/114)', () => {
+			chai.assert.throws(
+				() => evalXQuery("format-number(12345.678, '9.9999e999%')"),
+				/FODF1310/,
+			);
+			chai.assert.throws(
+				() => evalXQuery("format-number(12345.678, '9.9999e,')"),
+				/FODF1310/,
+			);
+		});
+
+		it('uses a decimal-format configured via the environment-equivalent prolog (numberformat09)', () => {
+			chai.assert.equal(
+				evalXQuery(
+					"declare default decimal-format decimal-separator='|' grouping-separator='.'; format-number(931.4857,'000.000|###')",
+				),
+				'000.931|486',
+			);
+		});
+
+		it('resolves a named decimal-format via the third argument', () => {
+			chai.assert.equal(
+				evalXQuery(
+					"declare decimal-format myminus minus-sign='_'; format-number(-26931.4,'###,###.###','myminus')",
+				),
+				'_26,931.4',
+			);
+		});
+
+		it('raises FODF1280 for an unknown decimal-format name', () => {
+			chai.assert.throws(
+				() => evaluateXPathToString("format-number(931.45, '000.##0', 'foo:bar')"),
+				/FODF1280/,
+			);
+		});
+
+		it('uses the digit family of a custom zero-digit (numberformat154)', () => {
+			chai.assert.equal(
+				evalXQuery(
+					"declare default decimal-format zero-digit = '٠'; format-number(1, '٠')",
+				),
+				'١',
+			);
+		});
+
+		it('rejects a duplicate property within one decimal-format declaration', () => {
+			chai.assert.throws(
+				() =>
+					evalXQuery(
+						"declare default decimal-format exponent-separator='e' exponent-separator='E'; format-number(1,'0e0')",
+					),
+				/XQST0114/,
+			);
+		});
+
+		it('rejects two properties sharing the same character', () => {
+			chai.assert.throws(
+				() =>
+					evalXQuery(
+						"declare default decimal-format decimal-separator='!' grouping-separator='!'; format-number(1,'0.0')",
+					),
+				/XQST0098/,
+			);
+		});
+
+		it('rejects a multi-character single-char property value', () => {
+			chai.assert.throws(
+				() =>
+					evalXQuery(
+						"declare default decimal-format exponent-separator='x10^'; format-number(1,'0e0')",
+					),
+				/XQST0097/,
+			);
+		});
 	});
 });

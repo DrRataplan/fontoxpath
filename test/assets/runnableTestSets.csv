@@ -90,7 +90,7 @@ fn-for-each-pair,false
 fn-format-date,false
 fn-format-dateTime,false
 fn-format-integer,true
-fn-format-number,false
+fn-format-number,true
 fn-format-time,false
 fn-function-arity,false
 fn-function-lookup,true

@@ -1,6 +1,7 @@
 import { LexicalQualifiedName, ResolvedQualifiedName } from '../types/Options';
 import ISequence from './dataTypes/ISequence';
 import DynamicContext from './DynamicContext';
+import { DecimalFormatProperties } from './functions/decimalFormat';
 import ExecutionParameters from './ExecutionParameters';
 import { FunctionProperties } from './functions/functionRegistry';
 
@@ -13,6 +14,9 @@ export default interface IContext {
 			executionParameters: ExecutionParameters,
 		) => ISequence;
 	};
+	lookupDecimalFormat(
+		name: { localName: string; namespaceURI: string } | null,
+	): DecimalFormatProperties | undefined;
 	lookupFunction(
 		namespaceURI: string,
 		localName: string,

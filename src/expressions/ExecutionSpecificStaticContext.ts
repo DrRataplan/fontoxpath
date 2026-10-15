@@ -94,6 +94,14 @@ export default class ExecutionSpecificStaticContext implements IContext {
 		return Object.values(this._referredNamespaceByName);
 	}
 
+	public lookupDecimalFormat(
+		_name: { localName: string; namespaceURI: string } | null,
+	): undefined {
+		// It is impossible to inject decimal-formats at execution time: they can only be declared
+		// in a module prolog, which is always represented by a StaticContext.
+		return undefined;
+	}
+
 	public getReferredVariables(): { name: string }[] {
 		return Object.values(this._referredVariableByName);
 	}

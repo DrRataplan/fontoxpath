@@ -284,7 +284,7 @@ export const decimalFormatPropertyName: Parser<string> = or([
 	tokens.INFINITY,
 	tokens.MINUS_SIGN,
 	tokens.NAN,
-	tokens.PERCENT,
+	tokens.PERCENT_NAME,
 	tokens.PER_MILLE,
 	tokens.ZERO_DIGIT,
 	tokens.DIGIT,

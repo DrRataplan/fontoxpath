@@ -2183,7 +2183,7 @@ function generateParser(options: {
 		star(
 			then(
 				preceded(whitespacePlus, decimalFormatPropertyName),
-				preceded(surrounded(tokens.EQUALS, whitespacePlus), stringLiteral),
+				preceded(surrounded(tokens.EQUALS, whitespace), stringLiteral),
 				(namePart, value) => [
 					'decimalFormatParam',
 					['decimalFormatParamName', namePart],

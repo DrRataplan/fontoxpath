@@ -4,14 +4,19 @@ import IContext from './Context';
 import ISequence from './dataTypes/ISequence';
 import DynamicContext from './DynamicContext';
 import ExecutionParameters from './ExecutionParameters';
+import { DecimalFormatProperties } from './functions/decimalFormat';
 import FunctionDefinitionType from './functions/FunctionDefinitionType';
 import { FunctionProperties } from './functions/functionRegistry';
 import UpdatingFunctionDefinitionType from './xquery-update/UpdatingFunctionDefinitionType';
-import { errXQST0049 } from './xquery/XQueryErrors';
+import { errXQST0049, errXQST0111 } from './xquery/XQueryErrors';
 
 function createHashKey(namespaceURI: any, localName: any) {
 	return `Q{${namespaceURI || ''}}${localName}`;
 }
+
+// A local name that can never be a valid QName local part, used to key the unnamed/default
+// decimal-format separately from any named one.
+const DEFAULT_DECIMAL_FORMAT_HASH_KEY = createHashKey('', '#default');
 
 function lookupInOverrides(overrides: any[] | { [x: string]: any }[], key: string) {
 	key = key + '';
@@ -59,6 +64,7 @@ export default class StaticContext implements IContext {
 			executionParameters: ExecutionParameters,
 		) => ISequence;
 	};
+	private _registeredDecimalFormatsByHash: Record<string, DecimalFormatProperties>;
 	private _registeredFunctionsByHash: Record<
 		string,
 		FunctionDefinition | UpdatingFunctionDefinition
@@ -77,6 +83,7 @@ export default class StaticContext implements IContext {
 
 		// Functions may never be added for only a closure
 		this._registeredFunctionsByHash = Object.create(null);
+		this._registeredDecimalFormatsByHash = Object.create(null);
 		this.registeredDefaultFunctionNamespaceURI = null;
 
 		this.registeredVariableDeclarationByHashKey =
@@ -110,6 +117,10 @@ export default class StaticContext implements IContext {
 				Object.create(null),
 				this._registeredFunctionsByHash,
 			);
+			contextAtThisPoint._registeredDecimalFormatsByHash = Object.assign(
+				Object.create(null),
+				this._registeredDecimalFormatsByHash,
+			);
 			contextAtThisPoint.registeredVariableDeclarationByHashKey =
 				this.registeredVariableDeclarationByHashKey;
 			contextAtThisPoint.registeredDefaultFunctionNamespaceURI =
@@ -135,6 +146,27 @@ export default class StaticContext implements IContext {
 
 		this._registeredNamespaceURIByPrefix[this._scopeDepth] = Object.create(null);
 		this.registeredVariableBindingByHashKey[this._scopeDepth] = Object.create(null);
+	}
+
+	/**
+	 * Look up a decimal-format by its expanded name, or the unnamed/default decimal-format if
+	 * `name` is null. Returns undefined if no such decimal-format has been declared anywhere in
+	 * scope.
+	 */
+	public lookupDecimalFormat(
+		name: { localName: string; namespaceURI: string } | null,
+	): DecimalFormatProperties | undefined {
+		const hashKey = name
+			? createHashKey(name.namespaceURI, name.localName)
+			: DEFAULT_DECIMAL_FORMAT_HASH_KEY;
+		const foundDecimalFormat = this._registeredDecimalFormatsByHash[hashKey];
+		if (foundDecimalFormat) {
+			return foundDecimalFormat;
+		}
+
+		return this.parentContext === null
+			? undefined
+			: this.parentContext.lookupDecimalFormat(name);
 	}
 
 	public lookupFunction(
@@ -180,6 +212,25 @@ export default class StaticContext implements IContext {
 			return varNameInCurrentScope;
 		}
 		return null;
+	}
+
+	/**
+	 * Register a decimal-format under its expanded name, or as the unnamed/default decimal-format
+	 * if `name` is null. Throws if a decimal-format with the same name (or another unnamed one)
+	 * was already registered on this context.
+	 */
+	public registerDecimalFormat(
+		name: { localName: string; namespaceURI: string } | null,
+		properties: DecimalFormatProperties,
+	) {
+		const hashKey = name
+			? createHashKey(name.namespaceURI, name.localName)
+			: DEFAULT_DECIMAL_FORMAT_HASH_KEY;
+		if (this._registeredDecimalFormatsByHash[hashKey]) {
+			throw errXQST0111(name ? name.localName : 'default');
+		}
+
+		this._registeredDecimalFormatsByHash[hashKey] = properties;
 	}
 
 	public registerFunctionDefinition(

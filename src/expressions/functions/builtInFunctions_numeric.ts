@@ -17,6 +17,7 @@ import { errXPDY0002 } from '../XPathErrors';
 import { performFunctionConversion } from './argumentHelper';
 import type { BuiltinDeclarationType } from './builtInFunctions';
 import type FunctionDefinitionType from './FunctionDefinitionType';
+import fnFormatNumber from './formatNumber';
 
 function createValidNumericType(type: ValueType, transformedValue: number) {
 	if (isSubtypeOf(type, ValueType.XSINTEGER)) {
@@ -817,6 +818,29 @@ const declarations: BuiltinDeclarationType[] = [
 		],
 		returnType: { type: ValueType.XSSTRING, mult: SequenceMultiplicity.EXACTLY_ONE },
 		callFunction: fnFormatInteger,
+	},
+
+	{
+		namespaceURI: BUILT_IN_NAMESPACE_URIS.FUNCTIONS_NAMESPACE_URI,
+		localName: 'format-number',
+		argumentTypes: [
+			{ type: ValueType.XSNUMERIC, mult: SequenceMultiplicity.ZERO_OR_ONE },
+			{ type: ValueType.XSSTRING, mult: SequenceMultiplicity.EXACTLY_ONE },
+		],
+		returnType: { type: ValueType.XSSTRING, mult: SequenceMultiplicity.EXACTLY_ONE },
+		callFunction: fnFormatNumber,
+	},
+
+	{
+		namespaceURI: BUILT_IN_NAMESPACE_URIS.FUNCTIONS_NAMESPACE_URI,
+		localName: 'format-number',
+		argumentTypes: [
+			{ type: ValueType.XSNUMERIC, mult: SequenceMultiplicity.ZERO_OR_ONE },
+			{ type: ValueType.XSSTRING, mult: SequenceMultiplicity.EXACTLY_ONE },
+			{ type: ValueType.XSSTRING, mult: SequenceMultiplicity.ZERO_OR_ONE },
+		],
+		returnType: { type: ValueType.XSSTRING, mult: SequenceMultiplicity.EXACTLY_ONE },
+		callFunction: fnFormatNumber,
 	},
 
 	{

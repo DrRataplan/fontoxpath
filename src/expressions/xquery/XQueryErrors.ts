@@ -70,3 +70,17 @@ export const errXQDY0096 = (qName: QName) =>
 	new Error(
 		`XQDY0096: The node name "${qName.buildPrefixedName()}" is invalid for a computed element constructor.`,
 	);
+export const errXQST0097 = (propertyName: string, value: string) =>
+	new Error(
+		`XQST0097: The value "${value}" of the decimal-format property "${propertyName}" is not valid.`,
+	);
+export const errXQST0098 = (character: string) =>
+	new Error(
+		`XQST0098: The character "${character}" is used for more than one property of a decimal-format declaration.`,
+	);
+export const errXQST0111 = (name: string) =>
+	new Error(`XQST0111: The decimal-format "${name}" has already been declared.`);
+export const errXQST0114 = (propertyName: string) =>
+	new Error(
+		`XQST0114: The property "${propertyName}" is specified more than once in the same decimal-format declaration.`,
+	);

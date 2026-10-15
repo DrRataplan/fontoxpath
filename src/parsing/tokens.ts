@@ -217,6 +217,7 @@ export const GROUPING_SEPARATOR = token('grouping-separator');
 export const INFINITY = token('infinity');
 export const MINUS_SIGN = token('minus-sign');
 export const NAN = token('NaN');
+export const PERCENT_NAME = token('percent');
 export const PER_MILLE = token('per-mille');
 export const ZERO_DIGIT = token('zero-digit');
 export const DIGIT = token('digit');

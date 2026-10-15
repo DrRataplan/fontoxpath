@@ -4,6 +4,12 @@ import sequenceFactory from '../expressions/dataTypes/sequenceFactory';
 import type { SequenceType } from '../expressions/dataTypes/Value';
 import DynamicContext from '../expressions/DynamicContext';
 import ExecutionParameters from '../expressions/ExecutionParameters';
+import {
+	DECIMAL_FORMAT_PROPERTY_NAME_BY_LEXICAL_NAME,
+	DEFAULT_DECIMAL_FORMAT_PROPERTIES,
+	DecimalFormatProperties,
+	SINGLE_CHARACTER_PROPERTY_NAMES,
+} from '../expressions/functions/decimalFormat';
 import Expression from '../expressions/Expression';
 import FunctionDefinitionType from '../expressions/functions/FunctionDefinitionType';
 import { getAlternativesAsStringFor } from '../expressions/functions/functionRegistry';
@@ -25,6 +31,9 @@ import {
 	errXQST0060,
 	errXQST0066,
 	errXQST0070,
+	errXQST0097,
+	errXQST0098,
+	errXQST0114,
 } from '../expressions/xquery/XQueryErrors';
 import astHelper, { IAST } from './astHelper';
 import compileAstToExpression from './compileAstToExpression';
@@ -313,6 +322,76 @@ function processFunctionDefinition(
 	);
 }
 
+function processDecimalFormatDeclaration(declaration: IAST, staticContext: StaticContext) {
+	const decimalFormatNameNode = astHelper.getFirstChild(declaration, 'decimalFormatName');
+
+	let name: { localName: string; namespaceURI: string } | null = null;
+	if (decimalFormatNameNode) {
+		const qName = astHelper.getQName(decimalFormatNameNode);
+		let namespaceURI = qName.namespaceURI;
+		if (namespaceURI === null && qName.prefix) {
+			namespaceURI = staticContext.resolveNamespace(qName.prefix);
+			if (!namespaceURI) {
+				throw errXPST0081(qName.prefix);
+			}
+		}
+		name = { localName: qName.localName, namespaceURI: namespaceURI || '' };
+	}
+
+	const properties: DecimalFormatProperties = { ...DEFAULT_DECIMAL_FORMAT_PROPERTIES };
+	const seenLexicalPropertyNames = new Set<string>();
+	astHelper.getChildren(declaration, 'decimalFormatParam').forEach((param) => {
+		const lexicalPropertyName = astHelper.getTextContent(
+			astHelper.getFirstChild(param, 'decimalFormatParamName'),
+		);
+		const value = astHelper.getTextContent(
+			astHelper.getFirstChild(param, 'decimalFormatParamValue'),
+		);
+
+		if (seenLexicalPropertyNames.has(lexicalPropertyName)) {
+			throw errXQST0114(lexicalPropertyName);
+		}
+		seenLexicalPropertyNames.add(lexicalPropertyName);
+
+		const propertyName = DECIMAL_FORMAT_PROPERTY_NAME_BY_LEXICAL_NAME[lexicalPropertyName];
+		if (
+			SINGLE_CHARACTER_PROPERTY_NAMES.includes(propertyName) &&
+			Array.from(value).length !== 1
+		) {
+			throw errXQST0097(lexicalPropertyName, value);
+		}
+
+		properties[propertyName] = value;
+	});
+
+	// It is a static error if two of the single-character properties (after applying the
+	// declaration on top of the standard defaults) share the same character.
+	const usedCharacters = new Map<string, string>();
+	SINGLE_CHARACTER_PROPERTY_NAMES.forEach((propertyName) => {
+		const character = properties[propertyName];
+		if (usedCharacters.has(character)) {
+			throw errXQST0098(character);
+		}
+		usedCharacters.set(character, propertyName);
+	});
+
+	// The whole family of 10 consecutive codepoints starting at zero-digit is treated as a
+	// "digit" when parsing a picture string, not just zero-digit itself. None of the other
+	// single-character properties may collide with any member of that family either.
+	const zeroDigitCodepoint = properties.zeroDigit.codePointAt(0);
+	SINGLE_CHARACTER_PROPERTY_NAMES.forEach((propertyName) => {
+		if (propertyName === 'zeroDigit') {
+			return;
+		}
+		const codepoint = properties[propertyName].codePointAt(0);
+		if (codepoint >= zeroDigitCodepoint && codepoint <= zeroDigitCodepoint + 9) {
+			throw errXQST0098(properties[propertyName]);
+		}
+	});
+
+	staticContext.registerDecimalFormat(name, properties);
+}
+
 /**
  * Process an XQuery prolog, preparing a static context from it
  *
@@ -338,6 +417,7 @@ export default function processProlog(
 			case 'moduleImport':
 			case 'namespaceDecl':
 			case 'defaultNamespaceDecl':
+			case 'decimalFormatDecl':
 			case 'functionDecl':
 			case 'varDecl':
 				break;
@@ -427,6 +507,10 @@ export default function processProlog(
 	if (defaultNamespaceElementDecl) {
 		staticContext.registerNamespace('', defaultNamespaceElementDecl);
 	}
+
+	astHelper.getChildren(prolog, 'decimalFormatDecl').forEach((declaration) => {
+		processDecimalFormatDeclaration(declaration, staticContext);
+	});
 
 	astHelper.getChildren(prolog, 'functionDecl').forEach((declaration) => {
 		processFunctionDefinition(
