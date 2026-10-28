@@ -179,6 +179,14 @@ function createCastingFunction(from: ValueType, to: ValueType): (value: Value) =
 			const decimalValue = isIntegerTarget
 				? Decimal.fromBigInt(Decimal.coerce(val).idiv(Decimal.fromFloat(1)))
 				: Decimal.coerce(val);
+			if (!validateRestrictions(decimalValue.toString(), to)) {
+				return {
+					successful: false,
+					error: new Error(
+						`FORG0001: Cannot cast ${decimalValue} to ${valueTypeToString(to)}, pattern validation failed.`,
+					),
+				};
+			}
 			return {
 				successful: true,
 				value: {

@@ -26,20 +26,10 @@ export default function isSameMapKey(k1: Value, k2: Value): boolean {
 		isSubtypeOf(k2.type, ValueType.XSDOUBLE) ||
 		isSubtypeOf(k2.type, ValueType.XSFLOAT);
 	if (k1IsNumeric && k2IsNumeric) {
-		if (
-			isSubtypeOf(k1.type, ValueType.XSDECIMAL) &&
-			isSubtypeOf(k2.type, ValueType.XSDECIMAL)
-		) {
-			const k1Decimal = Decimal.coerce(k1.value);
-			const k2Decimal = Decimal.coerce(k2.value);
-
-			return k1Decimal.equals(k2Decimal);
-		}
 		if (isNaN(k1.value) && isNaN(k2.value)) {
 			return true;
 		}
-
-		return k1.value === k2.value;
+		return Decimal.coerce(k1.value).equals(Decimal.coerce(k2.value));
 	}
 	// TODO: dateTime
 

@@ -114,16 +114,16 @@ const arrayRemove: FunctionDefinitionType = (
 	return zipSingleton([arraySequence], ([array]) =>
 		positionSequence.mapAll((allIndices) => {
 			const indicesToRemove = allIndices
-				.map((value) => value.value)
+				.map((value) =>
+					value.value instanceof Decimal ? value.value.toFloat() : value.value,
+				)
 				// Sort them in reverse order, to keep them stable
 				.sort((a, b) => b - a)
 				.filter((item, i, all) => all[i - 1] !== item);
 
 			const newMembers = (array as ArrayValue).members.concat();
 			for (let i = 0, l = indicesToRemove.length; i < l; ++i) {
-				// Make this a float. Infinite precision numbers in arrays are nonsense
-
-				const position = (indicesToRemove[i] as Decimal).toFloat();
+				const position = indicesToRemove[i] as number;
 				if (position > (array as ArrayValue).members.length || position <= 0) {
 					throw new Error('FOAY0001: subarray position out of bounds.');
 				}
@@ -418,8 +418,16 @@ const deepLessThan = (
 		return true;
 	} else if (isString(valuesA[0].type) && valuesB.length !== 0 && isString(valuesB[0].type)) {
 		return valuesA[0].value < valuesB[0].value;
+	} else if (
+		valuesB.length !== 0 &&
+		valuesA[0].value instanceof Decimal &&
+		valuesB[0].value instanceof Decimal
+	) {
+		return valuesA[0].value.compareTo(valuesB[0].value) < 0;
 	} else {
-		return valuesB.length === 0 ? false : valuesA[0].value < valuesB[0].value;
+		return valuesB.length === 0
+			? false
+			: (valuesA[0].value as number) < (valuesB[0].value as number);
 	}
 };
 

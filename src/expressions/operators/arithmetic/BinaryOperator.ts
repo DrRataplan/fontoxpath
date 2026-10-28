@@ -95,17 +95,12 @@ export function generateBinaryOperatorFunction(
 		if (!retType) retType = determineReturnType(typeA, typeB);
 		if (operator === 'divOp' && retType === ValueType.XSINTEGER) retType = ValueType.XSDECIMAL;
 
-		const bothOperandsAreIntegers =
-			isSubtypeOf(typeA, ValueType.XSINTEGER) && isSubtypeOf(typeB, ValueType.XSINTEGER);
 		const bothOperandsAreDecimalOrInteger =
 			isSubtypeOf(typeA, ValueType.XSDECIMAL) && isSubtypeOf(typeB, ValueType.XSDECIMAL);
 
-		// Arithmetic on xs:decimal values (and div/mod, which need exact decimal semantics)
-		// is dispatched to the Decimal implementation. Integer +, -, * and idiv keep using
-		// JavaScript numbers.
-		const useDecimalArithmetic =
-			bothOperandsAreDecimalOrInteger &&
-			(!bothOperandsAreIntegers || operator === 'divOp' || operator === 'modOp');
+		// Arithmetic on xs:decimal / xs:integer values is dispatched to the Decimal
+		// implementation to preserve arbitrary precision.
+		const useDecimalArithmetic = bothOperandsAreDecimalOrInteger;
 
 		if (useDecimalArithmetic) {
 			const decimalFun =
@@ -113,10 +108,7 @@ export function generateBinaryOperatorFunction(
 			return (a, b) => {
 				const { castA, castB } = applyCastFunctions(a, b);
 				const result = decimalFun(castA.value, castB.value);
-				return createAtomicValue(
-					retType === ValueType.XSDECIMAL ? result : Number(result),
-					retType,
-				);
+				return createAtomicValue(result, retType);
 			};
 		}
 

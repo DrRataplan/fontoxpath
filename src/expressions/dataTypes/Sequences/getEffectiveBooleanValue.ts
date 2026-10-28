@@ -33,7 +33,7 @@ export default function getEffectiveBooleanValue(value: Value): boolean {
 	// otherwise it returns true.
 	if (isSubtypeOf(value.type, ValueType.XSNUMERIC)) {
 		if (isSubtypeOf(value.type, ValueType.XSDECIMAL)) {
-			return !(value.value as Decimal).equals(Decimal.ZERO);
+			return !Decimal.coerce(jsValue).equals(Decimal.ZERO);
 		}
 		return !isNaN(jsValue as number) && jsValue !== 0;
 	}

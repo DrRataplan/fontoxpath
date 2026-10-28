@@ -193,6 +193,33 @@ export class Decimal {
 		return this._unscaled === ZERO;
 	}
 
+	public floor(): Decimal {
+		if (this._scale === 0) {
+			return this;
+		}
+		const pow = pow10(this._scale);
+		const quotient = this._unscaled / pow;
+		const remainder = this._unscaled % pow;
+		return new Decimal(remainder < ZERO ? quotient - ONE : quotient, 0);
+	}
+
+	public ceiling(): Decimal {
+		if (this._scale === 0) {
+			return this;
+		}
+		const pow = pow10(this._scale);
+		const quotient = this._unscaled / pow;
+		const remainder = this._unscaled % pow;
+		return new Decimal(remainder > ZERO ? quotient + ONE : quotient, 0);
+	}
+
+	public truncate(): Decimal {
+		if (this._scale === 0) {
+			return this;
+		}
+		return new Decimal(this._unscaled / pow10(this._scale), 0);
+	}
+
 	public equals(other: Decimal | number | bigint): boolean {
 		return this.compareTo(other) === 0;
 	}

@@ -388,7 +388,12 @@ const fnMax: FunctionDefinitionType = (
 	// Use first element in array as initial value
 	return sequenceFactory.singleton(
 		items.reduce((max, item) => {
-			return max.value < item.value ? item : max;
+			const maxVal = max.value instanceof Decimal ? max.value : item.value;
+			const itemVal = item.value instanceof Decimal ? item.value : max.value;
+			if (maxVal instanceof Decimal && itemVal instanceof Decimal) {
+				return maxVal.compareTo(itemVal) < 0 ? item : max;
+			}
+			return (max.value as number) < (item.value as number) ? item : max;
 		}),
 	);
 };
@@ -408,7 +413,12 @@ const fnMin: FunctionDefinitionType = (
 	// Use first element in array as initial value
 	return sequenceFactory.singleton(
 		items.reduce((min, item) => {
-			return min.value > item.value ? item : min;
+			const minVal = min.value instanceof Decimal ? min.value : item.value;
+			const itemVal = item.value instanceof Decimal ? item.value : min.value;
+			if (minVal instanceof Decimal && itemVal instanceof Decimal) {
+				return minVal.compareTo(itemVal) > 0 ? item : min;
+			}
+			return (min.value as number) > (item.value as number) ? item : min;
 		}),
 	);
 };

@@ -28,6 +28,7 @@ const opTo: FunctionDefinitionType = (
 		return sequenceFactory.empty();
 	}
 	// By providing a length, we do not have to hold an end condition into account
+	const length = Number(toValue.subtract(fromValue).add(1).toFloat());
 	return sequenceFactory.create(
 		{
 			next: () => {
@@ -36,7 +37,7 @@ const opTo: FunctionDefinitionType = (
 				return ready(createAtomicValue(current, ValueType.XSINTEGER));
 			},
 		},
-		toValue.toFloat() - fromValue.toFloat() + 1,
+		length,
 	);
 };
 
