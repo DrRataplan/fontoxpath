@@ -476,9 +476,10 @@ const fnAbs: FunctionDefinitionType = (
 ) => {
 	return sequence.map((onlyValue) => {
 		if (onlyValue.value instanceof Decimal) {
-			const absValue = onlyValue.value.compareTo(Decimal.ZERO) < 0
-				? onlyValue.value.negate()
-				: onlyValue.value;
+			const absValue =
+				onlyValue.value.compareTo(Decimal.ZERO) < 0
+					? onlyValue.value.negate()
+					: onlyValue.value;
 			return createAtomicValue(absValue, onlyValue.type);
 		}
 		return createValidNumericType(onlyValue.type, Math.abs(onlyValue.value));
@@ -683,25 +684,39 @@ function fnRound(
 				if (halfToEven) {
 					const cmp = absFrac.compareTo(half);
 					if (cmp > 0) {
-						roundedScaled = scaled.compareTo(Decimal.ZERO) < 0 ? truncated.subtract(1) : truncated.add(1);
+						roundedScaled =
+							scaled.compareTo(Decimal.ZERO) < 0
+								? truncated.subtract(1)
+								: truncated.add(1);
 					} else if (cmp < 0) {
 						roundedScaled = truncated;
 					} else {
 						const two = Decimal.fromFloat(2);
 						const isEven = truncated.mod(two).isZero();
-						roundedScaled = isEven ? truncated : (scaled.compareTo(Decimal.ZERO) < 0 ? truncated.subtract(1) : truncated.add(1));
+						roundedScaled = isEven
+							? truncated
+							: scaled.compareTo(Decimal.ZERO) < 0
+							? truncated.subtract(1)
+							: truncated.add(1);
 					}
 				} else {
 					const cmp = absFrac.compareTo(half);
 					if (cmp > 0) {
-						roundedScaled = scaled.compareTo(Decimal.ZERO) < 0 ? truncated.subtract(1) : truncated.add(1);
+						roundedScaled =
+							scaled.compareTo(Decimal.ZERO) < 0
+								? truncated.subtract(1)
+								: truncated.add(1);
 					} else if (cmp < 0) {
 						roundedScaled = truncated;
 					} else {
-						roundedScaled = scaled.compareTo(Decimal.ZERO) > 0 ? truncated.add(1) : truncated;
+						roundedScaled =
+							scaled.compareTo(Decimal.ZERO) > 0 ? truncated.add(1) : truncated;
 					}
 				}
-				const rounded = scalingPrecision >= 0 ? roundedScaled.div(pow10p) : roundedScaled.multiply(pow10p);
+				const rounded =
+					scalingPrecision >= 0
+						? roundedScaled.div(pow10p)
+						: roundedScaled.multiply(pow10p);
 				return ready(createAtomicValue(rounded, firstValue.type));
 			}
 

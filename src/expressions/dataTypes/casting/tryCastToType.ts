@@ -183,7 +183,9 @@ function createCastingFunction(from: ValueType, to: ValueType): (value: Value) =
 				return {
 					successful: false,
 					error: new Error(
-						`FORG0001: Cannot cast ${decimalValue} to ${valueTypeToString(to)}, pattern validation failed.`,
+						`FORG0001: Cannot cast ${decimalValue} to ${valueTypeToString(
+							to,
+						)}, pattern validation failed.`,
 					),
 				};
 			}
