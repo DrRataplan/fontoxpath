@@ -4063,3 +4063,55 @@ fo-test-array-subarray-006,Error: FOAY0001: subarray start out of bounds.
 fo-test-array-subarray-007,Error: FOAY0001: subarray start out of bounds.
 fo-test-array-fold-right-003,AssertionError: Expected XPath          array:fold-right([1,2,3], [], function($x, $y){[$x, $y]})        to (deep equally) resolve to [1, [2, [3, []]]]: expected false to be true
 fo-test-array-sort-002,Error: XPST0017: Function Q{http://www.w3.org/2005/xpath-functions/array}sort with arity of 3 not registered. Did you mean "Q{http://www.w3.org/2005/xpath-functions/array}sort (array(*))", "Q{http://www.w3.org/2001/XMLSchema}short (xs:anyAtomicType?)" or "Q{http://www.w3.org/2005/xpath-functions/math}sqrt (xs:double?)"?
+K-FloorFunc-5,AssertionError: Expected XPath floor(-10.5) eq -11 to resolve to true: expected false to be true
+fn-floor-decimal-5,AssertionError: Expected XPath floor(-0.1) to resolve to -1.0: expected false to be true
+fn-floor-decimal-6,AssertionError: Expected XPath floor(-12345678.567890) to resolve to -12345679: expected false to be true
+fn-floor-decimal-7,AssertionError: Expected XPath floor(-1234567891234567.2) to resolve to -1234567891234568.0: expected false to be true
+K-RoundFunc-9,AssertionError: Expected XPath round(-2.5) eq -2 to resolve to true: expected false to be true
+fn-round-decimal-7,AssertionError: Expected XPath fn:round(xs:decimal("-12.5")) to resolve to -12: expected false to be true
+cbcl-round-half-to-even-012,RangeError: Maximum BigInt size exceeded
+map-contains-014,Error: FOCA0002: Can not cast NaN to xs:decimal
+map-contains-015,Error: FOCA0002: Can not cast NaN to xs:decimal
+map-get-014,Error: FOCA0002: Can not cast NaN to xs:decimal
+map-get-015,Error: FOCA0002: Can not cast NaN to xs:decimal
+functx-fn-floor-4,AssertionError: Expected XPath (floor(-5.1)) to resolve to -6: expected false to be true
+functx-fn-floor-5,AssertionError: Expected XPath (floor(-5.7)) to resolve to -6: expected false to be true
+functx-fn-floor-all,AssertionError: (floor(5), floor(5.1), floor(5.7), floor(-5.1), floor(-5.7), floor( () )): expected '5 5 5 -5 -5' to equal '5 5 5 -6 -6'
+functx-fn-round-4,AssertionError: Expected XPath (round(-5.5)) to resolve to -5: expected false to be true
+functx-fn-round-all,AssertionError: (round(5), round(5.1), round(5.5), round(-5.5), round(-5.51)): expected '5 5 6 -6 -6' to equal '5 5 6 -5 -6'
+fo-test-fn-floor-002,AssertionError: Expected XPath          fn:floor(-10.5)        to (deep equally) resolve to -11: expected false to be true
+fo-test-fn-round-003,AssertionError: Expected XPath          fn:round(-2.5)        to (deep equally) resolve to -2.0: expected false to be true
+K2-RoundFunc-97,AssertionError: Expected XPath fn:round(xs:float("-0.51")) to resolve to -1: expected false to be true
+K2-RoundFunc-98,AssertionError: Expected XPath fn:round(xs:double("-0.51")) to resolve to -1: expected false to be true
+K2-RoundFunc-101,AssertionError: Expected XPath fn:round(xs:float("-0.54")) to resolve to -1: expected false to be true
+K2-RoundFunc-102,AssertionError: Expected XPath fn:round(xs:double("-0.54")) to resolve to -1: expected false to be true
+K2-RoundFunc-105,AssertionError: Expected XPath fn:round(xs:float("-0.55")) to resolve to -1: expected false to be true
+K2-RoundFunc-106,AssertionError: Expected XPath fn:round(xs:double("-0.55")) to resolve to -1: expected false to be true
+K2-RoundFunc-109,AssertionError: Expected XPath fn:round(xs:float("-0.56")) to resolve to -1: expected false to be true
+K2-RoundFunc-110,AssertionError: Expected XPath fn:round(xs:double("-0.56")) to resolve to -1: expected false to be true
+K2-RoundFunc-113,AssertionError: Expected XPath fn:round(xs:float("-0.59")) to resolve to -1: expected false to be true
+K2-RoundFunc-114,AssertionError: Expected XPath fn:round(xs:double("-0.59")) to resolve to -1: expected false to be true
+K2-RoundFunc-121,AssertionError: Expected XPath fn:round(xs:float("-0.61")) to resolve to -1: expected false to be true
+K2-RoundFunc-122,AssertionError: Expected XPath fn:round(xs:double("-0.61")) to resolve to -1: expected false to be true
+K2-RoundFunc-125,AssertionError: Expected XPath fn:round(xs:float("-0.64")) to resolve to -1: expected false to be true
+K2-RoundFunc-126,AssertionError: Expected XPath fn:round(xs:double("-0.64")) to resolve to -1: expected false to be true
+K2-RoundFunc-129,AssertionError: Expected XPath fn:round(xs:float("-0.65")) to resolve to -1: expected false to be true
+K2-RoundFunc-130,AssertionError: Expected XPath fn:round(xs:double("-0.65")) to resolve to -1: expected false to be true
+K2-RoundFunc-133,AssertionError: Expected XPath fn:round(xs:float("-0.66")) to resolve to -1: expected false to be true
+K2-RoundFunc-134,AssertionError: Expected XPath fn:round(xs:double("-0.66")) to resolve to -1: expected false to be true
+K2-RoundFunc-137,AssertionError: Expected XPath fn:round(xs:float("-0.69")) to resolve to -1: expected false to be true
+K2-RoundFunc-138,AssertionError: Expected XPath fn:round(xs:double("-0.69")) to resolve to -1: expected false to be true
+K2-RoundFunc-141,AssertionError: Expected XPath fn:round(xs:float("-0.60")) to resolve to -1: expected false to be true
+K2-RoundFunc-142,AssertionError: Expected XPath fn:round(xs:double("-0.60")) to resolve to -1: expected false to be true
+K2-RoundFunc-145,AssertionError: Expected XPath fn:round(xs:float("-0.91")) to resolve to -1: expected false to be true
+K2-RoundFunc-146,AssertionError: Expected XPath fn:round(xs:double("-0.91")) to resolve to -1: expected false to be true
+K2-RoundFunc-149,AssertionError: Expected XPath fn:round(xs:float("-0.94")) to resolve to -1: expected false to be true
+K2-RoundFunc-150,AssertionError: Expected XPath fn:round(xs:double("-0.94")) to resolve to -1: expected false to be true
+K2-RoundFunc-153,AssertionError: Expected XPath fn:round(xs:float("-0.95")) to resolve to -1: expected false to be true
+K2-RoundFunc-154,AssertionError: Expected XPath fn:round(xs:double("-0.95")) to resolve to -1: expected false to be true
+K2-RoundFunc-157,AssertionError: Expected XPath fn:round(xs:float("-0.96")) to resolve to -1: expected false to be true
+K2-RoundFunc-158,AssertionError: Expected XPath fn:round(xs:double("-0.96")) to resolve to -1: expected false to be true
+K2-RoundFunc-161,AssertionError: Expected XPath fn:round(xs:float("-0.99")) to resolve to -1: expected false to be true
+K2-RoundFunc-162,AssertionError: Expected XPath fn:round(xs:double("-0.99")) to resolve to -1: expected false to be true
+K2-RoundFunc-165,AssertionError: Expected XPath fn:round(xs:float("-0.90")) to resolve to -1: expected false to be true
+K2-RoundFunc-166,AssertionError: Expected XPath fn:round(xs:double("-0.90")) to resolve to -1: expected false to be true
